@@ -4,21 +4,43 @@ export default function EditModal({ provider, onClose, onSave }) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>Edit Provider</h3>
-        <p className="muted">This is a demo modal. Replace with real edit form.</p>
-        <div className="modal-body">
-          <div>
-            <span>Email</span>
-            <strong>{provider.email}</strong>
+        <h3>User Details</h3>
+
+        <div className="modal-section">
+          <h4>Contact Details</h4>
+          <div className="detail-row">
+            <span className="detail-icon email" aria-hidden="true" />
+            <span>{provider.email}</span>
           </div>
-          <div>
-            <span>Status</span>
-            <strong>{provider.status}</strong>
+          <div className="detail-row">
+            <span className="detail-icon phone" aria-hidden="true" />
+            <span>{provider.phoneNumber}</span>
+          </div>
+          <div className="detail-row">
+            <span className="detail-icon location" aria-hidden="true" />
+            <span>United Kingdom</span>
+          </div>
+          <div className="detail-row">
+            <span className="detail-icon calendar" aria-hidden="true" />
+            <span>{provider.signupDateFormatted || provider.signupDate}</span>
           </div>
         </div>
+
+        <div className="modal-section">
+          <h4>Customer Details</h4>
+          <div className="detail-row">
+            <span className="detail-label">Vendor Type</span>
+            <span>{provider.vendorType}</span>
+          </div>
+          <div className="detail-row">
+            <span className="detail-label">Service Offering</span>
+            <span>{provider.serviceOffering}</span>
+          </div>
+        </div>
+
         <div className="modal-actions">
           <button className="btn ghost" onClick={onClose}>
-            Cancel
+            Close
           </button>
           <button className="btn primary" onClick={onSave}>
             Save
