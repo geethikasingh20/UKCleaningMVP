@@ -1,4 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
+import ContentHeader from './components/ContentHeader.jsx';
+import FiltersSidebar from './components/FiltersSidebar.jsx';
+import ProvidersTable from './components/ProvidersTable.jsx';
+import EditModal from './components/EditModal.jsx';
+import Toast from './components/Toast.jsx';
 
 const API_BASE = 'http://localhost:8080/api/providers';
 const PAGE_SIZE = 10;
@@ -61,6 +66,7 @@ function formatUsFromIso(value) {
   if (!yyyy || !mm || !dd) return '';
   return `${mm}/${dd}/${yyyy}`;
 }
+
 function useDebounce(value, delay) {
   const [debounced, setDebounced] = useState(value);
   useEffect(() => {
@@ -145,10 +151,6 @@ export default function App() {
     [providers]
   );
 
-  const allSelected =
-    currentPageIds.length > 0 &&
-    currentPageIds.every((id) => selectedIds.has(id));
-
   useEffect(() => {
     const controller = new AbortController();
     const params = new URLSearchParams();
@@ -178,7 +180,11 @@ export default function App() {
           signal: controller.signal
         });
         const data = await response.json();
-        setProviders(data.content || []);
+        const enriched = (data.content || []).map((provider) => ({
+          ...provider,
+          signupDateFormatted: formatDate(provider.signupDate)
+        }));
+        setProviders(enriched);
         setTotalPages(data.totalPages || 0);
       } catch (error) {
         if (error.name !== 'AbortError') {
@@ -298,364 +304,52 @@ export default function App() {
       </div>
 
       <div className="layout">
-        <aside className={`sidebar ${filtersOpen ? "" : "collapsed"}`}>
-          <div className="sidebar-header">
-            <button className="filters-toggle" onClick={() => setFiltersOpen(false)} aria-label="Close filters">Close</button>
-            <h2>Filters</h2>
-            <span className="chip">UK Waitlist</span>
-          </div>
-
-          <label className="field">
-            <span>Postcode</span>
-            <input
-              type="text"
-              placeholder="e.g. SW1A 1AA"
-              value={draftFilters.postcode}
-              onChange={(e) =>
-                setDraftFilters((prev) => ({ ...prev, postcode: e.target.value }))
-              }
-            />
-          </label>
-
-          <label className="field">
-            <span>Registration Status</span>
-            <select
-              value={draftFilters.status}
-              onChange={(e) =>
-                setDraftFilters((prev) => ({ ...prev, status: e.target.value }))
-              }
-            >
-              <option value="">Any status</option>
-              {statusOptions.map((status) => (
-                <option key={status} value={status}>
-                  {status}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <div className="field">
-            <span>Date Registered</span>
-            <div className="date-stack">
-              <label className="date-field">
-                <span>Start date</span>
-                <div className="date-input">
-                  <input
-                    type="text"
-                    placeholder="MM/DD/YYYY"
-                    value={draftFilters.startDate}
-                    className={dateValidation.startError ? 'invalid' : ''}
-                    aria-invalid={Boolean(dateValidation.startError)}
-                    onChange={(e) =>
-                      setDraftFilters((prev) => ({ ...prev, startDate: e.target.value }))
-                    }
-                  />
-                  <button
-                    type="button"
-                    className="calendar-btn"
-                    onClick={(e) => {
-                      const target = e.currentTarget
-                        .closest('.date-input')
-                        ?.querySelector('input[type="date"]');
-                      target?.showPicker?.();
-                      target?.focus?.();
-                    }}
-                    aria-label="Pick start date"
-                  >
-                    CAL
-                  </button>
-                  <input
-                    type="date"
-                    className="date-picker"
-                    max={todayIso}
-                    value={dateValidation.startIso}
-                    onChange={(e) =>
-                      setDraftFilters((prev) => ({
-                        ...prev,
-                        startDate: formatUsFromIso(e.target.value)
-                      }))
-                    }
-                  />
-                </div>
-                {dateValidation.startError && (
-                  <p className="error-text">{dateValidation.startError}</p>
-                )}
-              </label>
-              <label className="date-field">
-                <span>End date</span>
-                <div className="date-input">
-                  <input
-                    type="text"
-                    placeholder="MM/DD/YYYY"
-                    value={draftFilters.endDate}
-                    className={dateValidation.endError || dateValidation.rangeError ? 'invalid' : ''}
-                    aria-invalid={Boolean(dateValidation.endError || dateValidation.rangeError)}
-                    onChange={(e) =>
-                      setDraftFilters((prev) => ({ ...prev, endDate: e.target.value }))
-                    }
-                  />
-                  <button
-                    type="button"
-                    className="calendar-btn"
-                    onClick={(e) => {
-                      const target = e.currentTarget
-                        .closest('.date-input')
-                        ?.querySelector('input[type="date"]');
-                      target?.showPicker?.();
-                      target?.focus?.();
-                    }}
-                    aria-label="Pick end date"
-                  >
-                    CAL
-                  </button>
-                  <input
-                    type="date"
-                    className="date-picker"
-                    max={todayIso}
-                    min={dateValidation.startIso || undefined}
-                    value={dateValidation.endIso}
-                    onChange={(e) =>
-                      setDraftFilters((prev) => ({
-                        ...prev,
-                        endDate: formatUsFromIso(e.target.value)
-                      }))
-                    }
-                  />
-                </div>
-                {dateValidation.endError && (
-                  <p className="error-text">{dateValidation.endError}</p>
-                )}
-                {dateValidation.rangeError && (
-                  <p className="error-text">{dateValidation.rangeError}</p>
-                )}
-              </label>
-            </div>
-          </div>
-
-          <label className="field">
-            <span>Vendor Type</span>
-            <select
-              value={draftFilters.vendorType}
-              onChange={(e) =>
-                setDraftFilters((prev) => ({ ...prev, vendorType: e.target.value }))
-              }
-            >
-              <option value="">All vendors</option>
-              {vendorOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="field">
-            <span>Service Offering</span>
-            <select
-              value={draftFilters.serviceOffering}
-              onChange={(e) =>
-                setDraftFilters((prev) => ({
-                  ...prev,
-                  serviceOffering: e.target.value
-                }))
-              }
-            >
-              <option value="">All services</option>
-              {offeringOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <div className="sidebar-actions">
-            <button className="btn primary" onClick={applyFilters} disabled={dateValidation.hasError}>
-              Apply Filters
-            </button>
-            <button className="btn ghost" onClick={clearFilters}>
-              Clear Filters
-            </button>
-          </div>
-        </aside>
+        <FiltersSidebar
+          filtersOpen={filtersOpen}
+          setFiltersOpen={setFiltersOpen}
+          draftFilters={draftFilters}
+          setDraftFilters={setDraftFilters}
+          dateValidation={dateValidation}
+          todayIso={todayIso}
+          statusOptions={statusOptions}
+          vendorOptions={vendorOptions}
+          offeringOptions={offeringOptions}
+          applyFilters={applyFilters}
+          clearFilters={clearFilters}
+          formatUsFromIso={formatUsFromIso}
+        />
 
         <main className="content">
-          <div className="content-header">
-            <div>
-              <h2>Waitlist Table</h2>
-              <p className="muted">Sorted {sortDir.toUpperCase()} by {columns.find(c => c.key === sortBy)?.label}</p>
-            </div>
-            <div className="content-actions">
-              <button className="filters-toggle" onClick={() => setFiltersOpen((prev) => !prev)}>
-                Filters
-              </button>
-              <div className="search">
-                <input
-                  type="search"
-                  placeholder="Search providers"
-                  value={searchInput}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                  onKeyDown={handleSearchKey}
-                />
-                <span className="search-icon">Go</span>
-              </div>
-            </div>
-          </div>
+          <ContentHeader
+            sortBy={sortBy}
+            sortDir={sortDir}
+            columns={columns}
+            searchInput={searchInput}
+            onSearchChange={handleSearchChange}
+            onSearchKey={handleSearchKey}
+            onToggleFilters={() => setFiltersOpen((prev) => !prev)}
+          />
 
-          <div className="table-card">
-            <div className="table-scroll">
-              <table>
-                <thead>
-                  <tr>
-                    <th>
-                      <input
-                        type="checkbox"
-                        checked={allSelected}
-                        onChange={(e) => handleSelectAll(e.target.checked)}
-                      />
-                    </th>
-                    {columns.map((column) => (
-                      <th key={column.key} onClick={() => handleSort(column.key)}>
-                        <span>{column.label}</span>
-                        {sortBy === column.key && (
-                          <span className={`sort ${sortDir}`} aria-hidden="true" />
-                        )}
-                      </th>
-                    ))}
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
-                    <tr>
-                      <td colSpan={columns.length + 2} className="loading">
-                        Loading providers...
-                      </td>
-                    </tr>
-                  ) : providers.length === 0 ? (
-                    <tr>
-                      <td colSpan={columns.length + 2} className="loading">
-                        No providers found.
-                      </td>
-                    </tr>
-                  ) : (
-                    providers.map((provider) => (
-                      <tr key={provider.id}>
-                        <td>
-                          <input
-                            type="checkbox"
-                            checked={selectedIds.has(provider.id)}
-                            onChange={(e) => handleRowSelect(provider.id, e.target.checked)}
-                          />
-                        </td>
-                        <td>{provider.email}</td>
-                        <td>{provider.phoneNumber}</td>
-                        <td>{provider.postcode}</td>
-                        <td>{provider.vendorType}</td>
-                        <td>{provider.serviceOffering}</td>
-                        <td>{formatDate(provider.signupDate)}</td>
-                        <td>
-                          <span className={`status ${provider.status.toLowerCase()}`}>
-                            {provider.status}
-                          </span>
-                        </td>
-                        <td>
-                          <button className="icon-btn edit" onClick={() => openModal(provider)} aria-label="Edit" />
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="pagination">
-              <button
-                className="btn ghost"
-                disabled={page === 0}
-                onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
-              >
-                Previous
-              </button>
-              <div className="page-numbers">
-                {Array.from({ length: totalPages }, (_, index) => (
-                  <button
-                    key={index}
-                    className={`page-btn ${page === index ? 'active' : ''}`}
-                    onClick={() => setPage(index)}
-                  >
-                    {index + 1}
-                  </button>
-                ))}
-              </div>
-              <button
-                className="btn ghost"
-                disabled={page >= totalPages - 1}
-                onClick={() => setPage((prev) => Math.min(prev + 1, totalPages - 1))}
-              >
-                Next
-              </button>
-            </div>
-          </div>
+          <ProvidersTable
+            providers={providers}
+            loading={loading}
+            columns={columns}
+            sortBy={sortBy}
+            sortDir={sortDir}
+            onSort={handleSort}
+            selectedIds={selectedIds}
+            onSelectAll={handleSelectAll}
+            onRowSelect={handleRowSelect}
+            openModal={openModal}
+            page={page}
+            totalPages={totalPages}
+            setPage={setPage}
+          />
         </main>
       </div>
 
-      {modalProvider && (
-        <div className="modal-backdrop" onClick={closeModal}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Edit Provider</h3>
-            <p className="muted">This is a demo modal. Replace with real edit form.</p>
-            <div className="modal-body">
-              <div>
-                <span>Email</span>
-                <strong>{modalProvider.email}</strong>
-              </div>
-              <div>
-                <span>Status</span>
-                <strong>{modalProvider.status}</strong>
-              </div>
-            </div>
-            <div className="modal-actions">
-              <button className="btn ghost" onClick={closeModal}>Cancel</button>
-              <button className="btn primary" onClick={saveModal}>Save</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {toast && (
-        <div className={`toast ${toast.type}`}>
-          {toast.message}
-        </div>
-      )}
+      <EditModal provider={modalProvider} onClose={closeModal} onSave={saveModal} />
+      <Toast toast={toast} />
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
