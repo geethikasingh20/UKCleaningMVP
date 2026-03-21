@@ -63,6 +63,20 @@ h1 {
   box-shadow: 0 15px 30px rgba(15, 23, 42, 0.08);
 }
 
+.hero-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.stat-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .stat-card strong {
   display: block;
   font-size: 22px;
@@ -527,6 +541,14 @@ tbody tr:hover {
     align-items: flex-start;
   }
 
+  .hero-side {
+    align-items: flex-start;
+  }
+
+  .stat-actions {
+    justify-content: flex-start;
+  }
+
   .content-header {
     flex-direction: column;
     align-items: flex-start;
@@ -588,3 +610,4 @@ thead th:hover {
 .field select:hover {
   border-color: #cbd5f5;
 }
+

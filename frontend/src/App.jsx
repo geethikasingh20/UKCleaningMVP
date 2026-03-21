@@ -83,6 +83,7 @@ export default function App() {
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalResults, setTotalResults] = useState(0);
+  const [selectAllLoading, setSelectAllLoading] = useState(false);
   const [sortBy, setSortBy] = useState('signupDate');
   const [sortDir, setSortDir] = useState('desc');
   const [searchInput, setSearchInput] = useState('');
@@ -153,27 +154,33 @@ export default function App() {
     [providers]
   );
 
-  useEffect(() => {
-    const controller = new AbortController();
+  const buildQueryParams = (pageNumber, size) => {
     const params = new URLSearchParams();
-    params.set('page', page.toString());
-    params.set('size', PAGE_SIZE.toString());
-    params.set('sortBy', sortBy);
-    params.set('sortDir', sortDir);
+    params.set("page", pageNumber.toString());
+    params.set("size", size.toString());
+    params.set("sortBy", sortBy);
+    params.set("sortDir", sortDir);
 
     if (debouncedSearch.trim()) {
-      params.set('search', debouncedSearch.trim());
+      params.set("search", debouncedSearch.trim());
     }
 
-    if (filters.postcode.trim()) params.set('postcode', filters.postcode.trim());
-    if (filters.status) params.set('status', filters.status);
-    if (filters.vendorType) params.set('vendorType', filters.vendorType);
-    if (filters.serviceOffering) params.set('serviceOffering', filters.serviceOffering);
+    if (filters.postcode.trim()) params.set("postcode", filters.postcode.trim());
+    if (filters.status) params.set("status", filters.status);
+    if (filters.vendorType) params.set("vendorType", filters.vendorType);
+    if (filters.serviceOffering) params.set("serviceOffering", filters.serviceOffering);
 
     const startDate = parseUsDate(filters.startDate);
     const endDate = parseUsDate(filters.endDate);
-    if (startDate) params.set('startDate', startDate);
-    if (endDate) params.set('endDate', endDate);
+    if (startDate) params.set("startDate", startDate);
+    if (endDate) params.set("endDate", endDate);
+
+    return params;
+  };
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const params = buildQueryParams(page, PAGE_SIZE);
 
     async function fetchProviders() {
       setLoading(true);
@@ -239,6 +246,28 @@ export default function App() {
       }
       return updated;
     });
+  };
+
+  const selectAllResults = async () => {
+    if (!totalResults) return;
+    setSelectAllLoading(true);
+    try {
+      const params = buildQueryParams(0, totalResults);
+      const response = await fetch(`${API_BASE}?${params.toString()}`);
+      const data = await response.json();
+      const ids = (data.content || []).map((provider) => provider.id);
+      setSelectedIds(new Set(ids));
+      setToast({ type: "success", message: `Selected ${ids.length} results.` });
+    } catch (error) {
+      console.error("Failed to select all results", error);
+      setToast({ type: "error", message: "Unable to select all results." });
+    } finally {
+      setSelectAllLoading(false);
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedIds(new Set());
   };
 
   const applyFilters = () => {
@@ -308,6 +337,22 @@ export default function App() {
             <strong>{totalResults}</strong>
           </div>
         </div>
+        <div className="stat-actions">
+          <button
+            className="btn ghost"
+            onClick={selectAllResults}
+            disabled={!totalResults || selectAllLoading}
+          >
+            {selectAllLoading ? "Selecting..." : "Select All Results"}
+          </button>
+          <button
+            className="btn ghost"
+            onClick={clearSelection}
+            disabled={selectedIds.size === 0}
+          >
+            Clear Selection
+          </button>
+        </div>
       </div>
 
       <div className="layout">
@@ -360,6 +405,12 @@ export default function App() {
     </div>
   );
 }
+
+
+
+
+
+
 
 
 
