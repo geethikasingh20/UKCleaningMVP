@@ -42,6 +42,12 @@ function parseUsDate(input) {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+function formatUsFromIso(value) {
+  if (!value) return '';
+  const [yyyy, mm, dd] = value.split('-');
+  if (!yyyy || !mm || !dd) return '';
+  return `${mm}/${dd}/${yyyy}`;
+}
 function useDebounce(value, delay) {
   const [debounced, setDebounced] = useState(value);
   useEffect(() => {
@@ -259,23 +265,81 @@ export default function App() {
 
           <div className="field">
             <span>Date Registered</span>
-            <div className="date-grid">
-              <input
-                type="text"
-                placeholder="MM/DD/YYYY"
-                value={draftFilters.startDate}
-                onChange={(e) =>
-                  setDraftFilters((prev) => ({ ...prev, startDate: e.target.value }))
-                }
-              />
-              <input
-                type="text"
-                placeholder="MM/DD/YYYY"
-                value={draftFilters.endDate}
-                onChange={(e) =>
-                  setDraftFilters((prev) => ({ ...prev, endDate: e.target.value }))
-                }
-              />
+            <div className="date-stack">
+              <label className="date-field">
+                <span>Start date</span>
+                <div className="date-input">
+                  <input
+                    type="text"
+                    placeholder="MM/DD/YYYY"
+                    value={draftFilters.startDate}
+                    onChange={(e) =>
+                      setDraftFilters((prev) => ({ ...prev, startDate: e.target.value }))
+                    }
+                  />
+                  <button
+                    type="button"
+                    className="calendar-btn"
+                    onClick={(e) => {
+                      const target = e.currentTarget
+                        .closest('.date-input')
+                        ?.querySelector('input[type="date"]');
+                      target?.showPicker?.();
+                      target?.focus?.();
+                    }}
+                    aria-label="Pick start date"
+                  >
+                    CAL
+                  </button>
+                  <input
+                    type="date"
+                    className="date-picker"
+                    onChange={(e) =>
+                      setDraftFilters((prev) => ({
+                        ...prev,
+                        startDate: formatUsFromIso(e.target.value)
+                      }))
+                    }
+                  />
+                </div>
+              </label>
+              <label className="date-field">
+                <span>End date</span>
+                <div className="date-input">
+                  <input
+                    type="text"
+                    placeholder="MM/DD/YYYY"
+                    value={draftFilters.endDate}
+                    onChange={(e) =>
+                      setDraftFilters((prev) => ({ ...prev, endDate: e.target.value }))
+                    }
+                  />
+                  <button
+                    type="button"
+                    className="calendar-btn"
+                    onClick={(e) => {
+                      const target = e.currentTarget
+                        .closest('.date-input')
+                        ?.querySelector('input[type="date"]');
+                      target?.showPicker?.();
+                      target?.focus?.();
+                    }}
+                    aria-label="Pick end date"
+                  >
+                    CAL
+                  </button>
+                  <input
+                    type="date"
+                    className="date-picker"
+                    onChange={(e) =>
+                      setDraftFilters((prev) => ({
+                        ...prev,
+                        endDate: formatUsFromIso(e.target.value)
+                      }))
+                    }
+                  />
+                </div>
+              </label>
             </div>
           </div>
 
@@ -475,3 +539,8 @@ export default function App() {
     </div>
   );
 }
+
+
+
+
+
