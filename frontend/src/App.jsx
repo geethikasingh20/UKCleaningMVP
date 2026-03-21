@@ -30,19 +30,30 @@ function formatDate(value) {
   if (!value) return '';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString('en-GB');
+  return date.toLocaleDateString('en-US', {
+    month: '2-digit',
+    day: '2-digit',
+    year: 'numeric'
+  });
 }
 
 function parseUsDate(input) {
   const trimmed = input.trim();
   if (!trimmed) return '';
-  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(trimmed);
+  const normalized = trimmed.replace(/[-.]/g, '/');
+  const match = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(normalized);
   if (!match) return '';
-  const [, mm, dd, yyyy] = match;
-  return `${yyyy}-${mm}-${dd}`;
-}
 
-function formatUsFromIso(value) {
+  const [, mmRaw, ddRaw, yyyy] = match;
+  const mm = Number(mmRaw);
+  const dd = Number(ddRaw);
+  if (mm < 1 || mm > 12) return '';
+  if (dd < 1 || dd > 31) return '';
+
+  const mmStr = String(mm).padStart(2, '0');
+  const ddStr = String(dd).padStart(2, '0');
+  return `${yyyy}-${mmStr}-${ddStr}`;
+}function formatUsFromIso(value) {
   if (!value) return '';
   const [yyyy, mm, dd] = value.split('-');
   if (!yyyy || !mm || !dd) return '';
@@ -539,6 +550,9 @@ export default function App() {
     </div>
   );
 }
+
+
+
 
 
 
