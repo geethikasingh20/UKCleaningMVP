@@ -15,7 +15,7 @@ mvn spring-boot:run
 ```
 API runs at `http://localhost:8080/api/providers`.
 
-Deployed at `https://ukcleaningmvp.onrender.com/api/providers`
+Deployed at https://ukcleaningmvp.onrender.com/api/providers
 This gives the data in JSON format
 
 ## Run Frontend
