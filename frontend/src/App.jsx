@@ -495,7 +495,7 @@ export default function App() {
                       <th key={column.key} onClick={() => handleSort(column.key)}>
                         <span>{column.label}</span>
                         {sortBy === column.key && (
-                          <span className="sort">{sortDir === 'asc' ? 'ASC' : 'DESC'}</span>
+                          <span className={`sort ${sortDir}`} aria-hidden="true" />
                         )}
                       </th>
                     ))}
@@ -537,9 +537,7 @@ export default function App() {
                           </span>
                         </td>
                         <td>
-                          <button className="icon-btn" onClick={() => openModal(provider)}>
-                            Edit
-                          </button>
+                          <button className="icon-btn edit" onClick={() => openModal(provider)} aria-label="Edit" />
                         </td>
                       </tr>
                     ))
@@ -610,6 +608,7 @@ export default function App() {
     </div>
   );
 }
+
 
 
 
