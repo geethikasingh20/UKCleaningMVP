@@ -4,6 +4,7 @@ export default function EditModal({ provider, onClose, onSave }) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h3>Dummy modal box</h3>
         <h3>User Details</h3>
 
         <div className="modal-section">
