@@ -1,0 +1,5 @@
+*.docx
+*.pdf
+~$*
+frontend/node_modules/
+backend/target/
