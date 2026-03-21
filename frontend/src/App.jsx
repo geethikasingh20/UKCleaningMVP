@@ -5,7 +5,8 @@ import ProvidersTable from './components/ProvidersTable.jsx';
 import EditModal from './components/EditModal.jsx';
 import Toast from './components/Toast.jsx';
 
-const API_ORIGIN = import.meta.env.VITE_API_BASE || 'http://localhost:8080';\r\nconst API_BASE = ${API_ORIGIN.replace(/\\/$/, '')}/api/providers;
+const API_ORIGIN = import.meta.env.VITE_API_BASE || 'http://localhost:8080';
+const API_BASE = `${API_ORIGIN.replace(/\/$/, '')}/api/providers`;
 const PAGE_SIZE = 10;
 
 const vendorOptions = ['Independent', 'Company'];
@@ -353,4 +354,8 @@ export default function App() {
     </div>
   );
 }
+
+
+
+
 
