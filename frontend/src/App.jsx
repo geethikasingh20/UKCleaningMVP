@@ -53,7 +53,9 @@ function parseUsDate(input) {
   const mmStr = String(mm).padStart(2, '0');
   const ddStr = String(dd).padStart(2, '0');
   return `${yyyy}-${mmStr}-${ddStr}`;
-}function formatUsFromIso(value) {
+}
+
+function formatUsFromIso(value) {
   if (!value) return '';
   const [yyyy, mm, dd] = value.split('-');
   if (!yyyy || !mm || !dd) return '';
@@ -82,6 +84,21 @@ export default function App() {
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [modalProvider, setModalProvider] = useState(null);
   const [toast, setToast] = useState(null);
+  const [filtersOpen, setFiltersOpen] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return window.innerWidth >= 1024;
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setFiltersOpen(true);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const todayIso = useMemo(() => {
     const now = new Date();
     const yyyy = now.getFullYear();
@@ -281,8 +298,9 @@ export default function App() {
       </div>
 
       <div className="layout">
-        <aside className="sidebar">
+        <aside className={`sidebar ${filtersOpen ? "" : "collapsed"}`}>
           <div className="sidebar-header">
+            <button className="filters-toggle" onClick={() => setFiltersOpen(false)} aria-label="Close filters">Close</button>
             <h2>Filters</h2>
             <span className="chip">UK Waitlist</span>
           </div>
@@ -467,15 +485,20 @@ export default function App() {
               <h2>Waitlist Table</h2>
               <p className="muted">Sorted {sortDir.toUpperCase()} by {columns.find(c => c.key === sortBy)?.label}</p>
             </div>
-            <div className="search">
-              <input
-                type="search"
-                placeholder="Search providers"
-                value={searchInput}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                onKeyDown={handleSearchKey}
-              />
-              <span className="search-icon">Go</span>
+            <div className="content-actions">
+              <button className="filters-toggle" onClick={() => setFiltersOpen((prev) => !prev)}>
+                Filters
+              </button>
+              <div className="search">
+                <input
+                  type="search"
+                  placeholder="Search providers"
+                  value={searchInput}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  onKeyDown={handleSearchKey}
+                />
+                <span className="search-icon">Go</span>
+              </div>
             </div>
           </div>
 
@@ -608,6 +631,17 @@ export default function App() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 
