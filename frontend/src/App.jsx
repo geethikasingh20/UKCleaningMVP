@@ -475,7 +475,7 @@ export default function App() {
                 onChange={(e) => handleSearchChange(e.target.value)}
                 onKeyDown={handleSearchKey}
               />
-              <span className="search-icon">?</span>
+              <span className="search-icon">Go</span>
             </div>
           </div>
 
@@ -495,7 +495,7 @@ export default function App() {
                       <th key={column.key} onClick={() => handleSort(column.key)}>
                         <span>{column.label}</span>
                         {sortBy === column.key && (
-                          <span className="sort">{sortDir === 'asc' ? '?' : '?'}</span>
+                          <span className="sort">{sortDir === 'asc' ? 'ASC' : 'DESC'}</span>
                         )}
                       </th>
                     ))}
@@ -538,7 +538,7 @@ export default function App() {
                         </td>
                         <td>
                           <button className="icon-btn" onClick={() => openModal(provider)}>
-                            ?
+                            Edit
                           </button>
                         </td>
                       </tr>
@@ -610,6 +610,10 @@ export default function App() {
     </div>
   );
 }
+
+
+
+
 
 
 
