@@ -1,8 +1,8 @@
 package com.example.waitlist.service;
 
 import com.example.waitlist.model.ServiceProvider;
+import com.example.waitlist.repository.ServiceProviderRepository;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -12,27 +12,34 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ProviderService {
-  private final List<ServiceProvider> providers = new ArrayList<>();
+  private final ServiceProviderRepository repository;
 
-  public ProviderService() {
-    seedData();
+  public ProviderService(ServiceProviderRepository repository) {
+    this.repository = repository;
+    seedDataIfEmpty();
   }
 
-  private void seedData() {
+  private void seedDataIfEmpty() {
+    if (repository.count() > 0) {
+      return;
+    }
+
     String[] vendorTypes = {"Independent", "Company"};
     String[] offerings = {"Housekeeping", "Window Cleaning", "Car Valet"};
     String[] statuses = {"Onboarded", "Rejected"};
     String[] postcodes = {"SW1A 1AA", "E1 6AN", "M1 1AE", "B1 1AA", "LS1 4AP", "G1 1AA", "L1 8JQ"};
+
+    LocalDate today = LocalDate.now();
 
     for (int i = 1; i <= 60; i++) {
       String vendorType = vendorTypes[i % vendorTypes.length];
       String offering = offerings[i % offerings.length];
       String status = statuses[i % statuses.length];
       String postcode = postcodes[i % postcodes.length];
-      LocalDate date = LocalDate.now().minusDays(i * 2L);
+      LocalDate date = today.minusDays(i * 2L);
 
-      providers.add(new ServiceProvider(
-          (long) i,
+      ServiceProvider provider = new ServiceProvider(
+          null,
           String.format("provider%02d@cleaning.co.uk", i),
           String.format("+44 7700 %04d", 1000 + i),
           postcode,
@@ -40,7 +47,8 @@ public class ProviderService {
           offering,
           date,
           status
-      ));
+      );
+      repository.save(provider);
     }
   }
 
@@ -61,7 +69,7 @@ public class ProviderService {
     String normalizedVendorType = normalize(vendorType);
     String normalizedOffering = normalize(serviceOffering);
 
-    List<ServiceProvider> filtered = providers.stream()
+    List<ServiceProvider> filtered = repository.findAll().stream()
         .filter(p -> matchesSearch(p, normalizedSearch))
         .filter(p -> matchesField(p.getPostcode(), normalizedPostcode))
         .filter(p -> matchesField(p.getStatus(), normalizedStatus))
