@@ -82,6 +82,44 @@ export default function App() {
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [modalProvider, setModalProvider] = useState(null);
   const [toast, setToast] = useState(null);
+  const todayIso = useMemo(() => {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }, []);
+
+  const dateValidation = useMemo(() => {
+    const startValue = draftFilters.startDate.trim();
+    const endValue = draftFilters.endDate.trim();
+    const startIso = startValue ? parseUsDate(startValue) : '';
+    const endIso = endValue ? parseUsDate(endValue) : '';
+    let startError = '';
+    let endError = '';
+    let rangeError = '';
+
+    if (startValue && !startIso) {
+      startError = 'Use MM/DD/YYYY format.';
+    } else if (startIso && startIso > todayIso) {
+      startError = 'Start date cannot be in the future.';
+    }
+
+    if (endValue && !endIso) {
+      endError = 'Use MM/DD/YYYY format.';
+    } else if (endIso && endIso > todayIso) {
+      endError = 'End date cannot be in the future.';
+    }
+
+    if (!startError && !endError && startIso && endIso && endIso < startIso) {
+      rangeError = 'End date cannot be before start date.';
+    }
+
+    const hasError = Boolean(startError || endError || rangeError);
+    const message = startError || endError || rangeError || '';
+
+    return { startIso, endIso, startError, endError, rangeError, hasError, message };
+  }, [draftFilters, todayIso]);
 
   const debouncedSearch = useDebounce(searchTerm, 300);
 
@@ -178,6 +216,10 @@ export default function App() {
   };
 
   const applyFilters = () => {
+    if (dateValidation.hasError) {
+      setToast({ type: 'error', message: dateValidation.message });
+      return;
+    }
     setFilters(draftFilters);
     setPage(0);
     setToast({ type: 'success', message: 'Filters applied successfully.' });
@@ -284,6 +326,8 @@ export default function App() {
                     type="text"
                     placeholder="MM/DD/YYYY"
                     value={draftFilters.startDate}
+                    className={dateValidation.startError ? 'invalid' : ''}
+                    aria-invalid={Boolean(dateValidation.startError)}
                     onChange={(e) =>
                       setDraftFilters((prev) => ({ ...prev, startDate: e.target.value }))
                     }
@@ -305,6 +349,8 @@ export default function App() {
                   <input
                     type="date"
                     className="date-picker"
+                    max={todayIso}
+                    value={dateValidation.startIso}
                     onChange={(e) =>
                       setDraftFilters((prev) => ({
                         ...prev,
@@ -313,6 +359,9 @@ export default function App() {
                     }
                   />
                 </div>
+                {dateValidation.startError && (
+                  <p className="error-text">{dateValidation.startError}</p>
+                )}
               </label>
               <label className="date-field">
                 <span>End date</span>
@@ -321,6 +370,8 @@ export default function App() {
                     type="text"
                     placeholder="MM/DD/YYYY"
                     value={draftFilters.endDate}
+                    className={dateValidation.endError || dateValidation.rangeError ? 'invalid' : ''}
+                    aria-invalid={Boolean(dateValidation.endError || dateValidation.rangeError)}
                     onChange={(e) =>
                       setDraftFilters((prev) => ({ ...prev, endDate: e.target.value }))
                     }
@@ -342,6 +393,9 @@ export default function App() {
                   <input
                     type="date"
                     className="date-picker"
+                    max={todayIso}
+                    min={dateValidation.startIso || undefined}
+                    value={dateValidation.endIso}
                     onChange={(e) =>
                       setDraftFilters((prev) => ({
                         ...prev,
@@ -350,6 +404,12 @@ export default function App() {
                     }
                   />
                 </div>
+                {dateValidation.endError && (
+                  <p className="error-text">{dateValidation.endError}</p>
+                )}
+                {dateValidation.rangeError && (
+                  <p className="error-text">{dateValidation.rangeError}</p>
+                )}
               </label>
             </div>
           </div>
@@ -392,7 +452,7 @@ export default function App() {
           </label>
 
           <div className="sidebar-actions">
-            <button className="btn primary" onClick={applyFilters}>
+            <button className="btn primary" onClick={applyFilters} disabled={dateValidation.hasError}>
               Apply Filters
             </button>
             <button className="btn ghost" onClick={clearFilters}>
@@ -550,6 +610,10 @@ export default function App() {
     </div>
   );
 }
+
+
+
+
 
 
 
