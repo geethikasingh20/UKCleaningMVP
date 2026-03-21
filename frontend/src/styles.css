@@ -300,6 +300,9 @@ h1 {
 
 .table-scroll {
   overflow-x: auto;
+  overflow-y: hidden;
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 
 table {
@@ -504,6 +507,7 @@ tbody tr:hover {
     gap: 12px;
   }
 }
+
 
 
 
