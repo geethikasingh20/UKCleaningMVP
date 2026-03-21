@@ -82,6 +82,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [totalResults, setTotalResults] = useState(0);
   const [sortBy, setSortBy] = useState('signupDate');
   const [sortDir, setSortDir] = useState('desc');
   const [searchInput, setSearchInput] = useState('');
@@ -187,6 +188,7 @@ export default function App() {
         }));
         setProviders(enriched);
         setTotalPages(data.totalPages || 0);
+        setTotalResults(data.totalElements || 0);
       } catch (error) {
         if (error.name !== 'AbortError') {
           console.error('Failed to load providers', error);
@@ -298,8 +300,12 @@ export default function App() {
             <strong>{selectedIds.size}</strong>
           </div>
           <div>
-            <span className="stat-label">Results</span>
+            <span className="stat-label">Page Results</span>
             <strong>{providers.length}</strong>
+          </div>
+          <div>
+            <span className="stat-label">Total Results</span>
+            <strong>{totalResults}</strong>
           </div>
         </div>
       </div>
@@ -354,6 +360,9 @@ export default function App() {
     </div>
   );
 }
+
+
+
 
 
 
