@@ -25,7 +25,7 @@ npm install
 npm run dev
 ```
 Frontend runs at `http://localhost:5173`.
-Deployed at `https://ukcleaningmvp-fe.onrender.com/`
+Deployed at https://ukcleaningmvp-fe.onrender.com/
 ## Notes
 - Pagination is set to 10 rows per page with 60 seed rows.
 - Filters apply with the sidebar button and search is live with debounce.
