@@ -36,13 +36,14 @@ public class ProviderController {
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
   ) {
+    System.out.println("*********** inside list poviders");
     List<ServiceProvider> filtered = providerService.getFiltered(
         search, postcode, status, startDate, endDate, vendorType, serviceOffering, sortBy, sortDir);
 
     int totalElements = filtered.size();
     int fromIndex = Math.max(0, page * size);
     int toIndex = Math.min(totalElements, fromIndex + size);
-
+    System.out.println("*********** inside totalElements");
     List<ServiceProvider> content = fromIndex >= totalElements ? List.of() : filtered.subList(fromIndex, toIndex);
     int totalPages = (int) Math.ceil((double) totalElements / size);
 

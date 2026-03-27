@@ -21,9 +21,10 @@ public class ProviderService {
 
   private void seedDataIfEmpty() {
     if (repository.count() > 0) {
+       System.out.println("*********** inside seedDataIfEmpty");
       return;
     }
-
+  System.out.println("*********** inside seedDataIfEmpty 2 ");
     String[] vendorTypes = {"Independent", "Company"};
     String[] offerings = {"Housekeeping", "Window Cleaning", "Car Valet"};
     String[] statuses = {"Onboarded", "Rejected"};
@@ -77,13 +78,13 @@ public class ProviderService {
         .filter(p -> matchesField(p.getServiceOffering(), normalizedOffering))
         .filter(p -> matchesDateRange(p.getSignupDate(), startDate, endDate))
         .collect(Collectors.toList());
-
+   System.out.println("*********** inside getFiltered 1 ");
     Comparator<ServiceProvider> comparator = getComparator(sortBy);
     if ("desc".equalsIgnoreCase(sortDir)) {
       comparator = comparator.reversed();
     }
     filtered.sort(comparator);
-
+  System.out.println("*********** inside getFiltered 2 ");
     return filtered;
   }
 
